@@ -6,7 +6,7 @@
 
 ## TL;DR
 
-Take any `String`, `Integer`, or `Float` and instanteously convtert it to _Wei_:
+Take any `String`, `Integer`, or `Float` and instanteously convert it to _Wei_:
 
   - `1(as: .ether)`;
   - `"1"(as: .ether)`;  
