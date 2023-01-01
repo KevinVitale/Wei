@@ -12,7 +12,7 @@ let package = Package(
         .library( name: "Wei", targets: ["Wei"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/attaswift/BigInt.git", from: "5.0.0")
+        .package(url: "https://github.com/leif-ibsen/BigInt.git", from: "1.4.0")
     ],
     targets: [
         .target( name: "Wei", dependencies: ["BigInt"] ),
