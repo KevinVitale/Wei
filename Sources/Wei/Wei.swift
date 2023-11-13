@@ -47,34 +47,41 @@ public struct Wei: Codable, Equatable, CustomDebugStringConvertible, Expressible
     try container.encode(wrappedValue, forKey: denomination)
   }
   
-  private let denomination :Denomination
-  private var amount       :Decimal? {
-    Decimal(string: wrappedValue).map { $0 * denomination.decimal }
+  public var wrappedValue: String
+  
+  private let denomination: Denomination
+  
+  private var amount: String {
+    decimalString(denomination).trimTrailingZeroes()
   }
   
-  public var hexString :String {
-    guard let bigInt = BInt(to(.wei).wrappedValue) else {
-      return "0x"
-    }
-    return "0x" + bigInt.asString(radix: 16)
+  private func decimalString(_ denomination: Denomination) -> String {
+    convert(to: denomination).asDecimalString(precision: 78)
   }
   
-  public var wrappedValue :String
+  private func convert(to conversion: Wei.Denomination = .wei) -> BFraction {
+    (BFraction(wrappedValue)! * denomination.amount) / conversion.amount
+  }
+  
   public var debugDescription: String {
-    guard let amount = self.amount else {
-      return "Invalid \"wrappedValue\": \(wrappedValue)"
-    }
-    
-    return "\(amount / denomination.decimal) \(denomination.stringValue.uppercased())"
+    return "\(amount) \(denomination.stringValue)"
+  }
+  
+  public var hexString: String {
+    "0x" + (BInt(to(.wei).amount)?.asString(radix: 16) ?? "")
   }
   
   public func to(_ denomination: Wei.Denomination) -> Wei {
-    Wei(wrappedValue: "\(amount! / denomination.decimal)", denomination: denomination)
+    Wei(wrappedValue: decimalString(denomination), denomination: denomination)
   }
   
   public static func ==(lhs: Wei, rhs: Wei) -> Bool {
     lhs.to(.wei).amount == rhs.to(.wei).amount
   }
+  
+  public static let zero = 0(as: .wei)
+  public static let min = Self.zero
+  public static let max = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7"(as: .wei)
 }
 
 extension StringProtocol {
@@ -88,6 +95,16 @@ extension StringProtocol {
     } else {
       return self
     }
+  }
+  
+  fileprivate func trimTrailingZeroes() -> String {
+    var string = String(reversed().drop(while: { $0 == "0" }).reversed())
+    
+    if string.last == "." {
+      string.removeLast()
+    }
+    
+    return string
   }
 }
 
@@ -106,7 +123,7 @@ extension Double {
 extension Wei {
   public enum Denomination: Comparable, CodingKey, CaseIterable {
     public static func < (lhs: Wei.Denomination, rhs: Wei.Denomination) -> Bool {
-      lhs.decimal < rhs.decimal
+      lhs.amount < rhs.amount
     }
     
     case gas   //1
@@ -118,16 +135,16 @@ extension Wei {
     case milli //1_000_000_000_000_000
     case ether //1_000_000_000_000_000_000
     
-    var decimal: Decimal {
+    fileprivate var amount: BInt {
       switch self {
-      case .gas   :fallthrough
-      case .wei   :return 1
-      case .kwei  :return 1e3
-      case .mwei  :return 1e6
-      case .gwei  :return 1e9
-      case .micro :return 1e12
-      case .milli :return 1e15
-      case .ether :return 1e18
+        case .gas   :fallthrough
+        case .wei   :return BInt(1)!
+        case .kwei  :return BInt(1e3)!
+        case .mwei  :return BInt(1e6)!
+        case .gwei  :return BInt(1e9)!
+        case .micro :return BInt(1e12)!
+        case .milli :return BInt(1e15)!
+        case .ether :return BInt(1e18)!
       }
     }
     
