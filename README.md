@@ -6,15 +6,22 @@
 
 ## TL;DR
 
+### Converting to _wei_
+
 Take any `String`, `Integer`, or `Float` and instanteously convert it to _Wei_:
 
   - `1(as: .ether)`;
   - `"1"(as: .ether)`;  
   - `1.0(as: .ether)`;  
   
-Convert _Wei_ between denominations:
+### Converting between denominations:
 
-`1(as: .gwei).to(.wei) // 1000000 WEI`
+  - `1(as: .gwei).to(.wei) // 1000000 wei`
+
+### Hex Strings
+
+  - `"0xa"(as: .wei) // 10 wei`
+  - `"1.5"(as: .ether).to(.wei).hexString // 0x14d1120d7b160000`
 
 ## Test Examples
 
